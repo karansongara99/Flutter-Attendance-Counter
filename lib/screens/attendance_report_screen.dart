@@ -162,24 +162,28 @@ class AttendanceReportScreen extends StatelessWidget {
                           ),
                           _buildStatCard(
                             'Total Present',
-                            attendanceHistory
-                                .fold(
-                                    0,
-                                    (sum, item) =>
-                                        sum + (item['present'] as int))
-                                .toString(),
+                            attendanceHistory.isEmpty
+                                ? '0'
+                                : attendanceHistory.last['presentNumbers']
+                                    .toString()
+                                    .split(', ')
+                                    .where((s) => s.isNotEmpty)
+                                    .length
+                                    .toString(),
                             Icons.check_circle,
                             Colors.green,
                             isSmallScreen,
                           ),
                           _buildStatCard(
                             'Total Absent',
-                            attendanceHistory
-                                .fold(
-                                    0,
-                                    (sum, item) =>
-                                        sum + (item['absent'] as int))
-                                .toString(),
+                            attendanceHistory.isEmpty
+                                ? '0'
+                                : attendanceHistory.last['absentNumbers']
+                                    .toString()
+                                    .split(', ')
+                                    .where((s) => s.isNotEmpty)
+                                    .length
+                                    .toString(),
                             Icons.cancel,
                             Colors.red,
                             isSmallScreen,
@@ -198,102 +202,53 @@ class AttendanceReportScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: screenSize.width - (isSmallScreen ? 32 : 48),
-                    ),
-                    child: DataTable(
-                      columnSpacing: isSmallScreen ? 16 : 24,
-                      horizontalMargin: isSmallScreen ? 8 : 16,
-                      headingRowColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Latest Attendance',
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 16 : 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      dataRowColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.surface,
-                      ),
-                      columns: [
-                        DataColumn(
-                          label: Text(
-                            'Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: isSmallScreen ? 14 : 16,
-                            ),
+                      const SizedBox(height: 16),
+                      if (attendanceHistory.isNotEmpty)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildInfoColumn(
+                                  'Date',
+                                  attendanceHistory.last['date'].toString(),
+                                  isSmallScreen),
+                              const SizedBox(width: 24),
+                              _buildInfoColumn(
+                                  'Time',
+                                  attendanceHistory.last['time'].toString(),
+                                  isSmallScreen),
+                              const SizedBox(width: 24),
+                              _buildInfoColumn(
+                                  'Present Numbers',
+                                  attendanceHistory.last['presentNumbers']
+                                      .toString(),
+                                  isSmallScreen,
+                                  valueColor: Colors.green),
+                              const SizedBox(width: 24),
+                              _buildInfoColumn(
+                                  'Absent Numbers',
+                                  attendanceHistory.last['absentNumbers']
+                                      .toString(),
+                                  isSmallScreen,
+                                  valueColor: Colors.red),
+                            ],
                           ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Time',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: isSmallScreen ? 14 : 16,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Present Numbers',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: isSmallScreen ? 14 : 16,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Absent Numbers',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: isSmallScreen ? 14 : 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                      rows: attendanceHistory.map((record) {
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Text(
-                                record['date'].toString(),
-                                style: TextStyle(
-                                  fontSize: isSmallScreen ? 12 : 14,
-                                ),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                record['time'].toString(),
-                                style: TextStyle(
-                                  fontSize: isSmallScreen ? 12 : 14,
-                                ),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                record['presentNumbers'].toString(),
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontSize: isSmallScreen ? 12 : 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                record['absentNumbers'].toString(),
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: isSmallScreen ? 12 : 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                        )
+                      else
+                        const Text('No attendance records yet')
+                    ],
                   ),
                 ),
               ),
@@ -346,6 +301,31 @@ class AttendanceReportScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildInfoColumn(String label, String value, bool isSmallScreen,
+      {Color? valueColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isSmallScreen ? 12 : 14,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isSmallScreen ? 14 : 16,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildUtilityButton({
     required BuildContext context,
     required VoidCallback onPressed,
@@ -362,7 +342,7 @@ class AttendanceReportScreen extends StatelessWidget {
         icon: Icon(icon, size: isSmallScreen ? 18 : 20),
         label: Text(
           label,
-          style: TextStyle(fontSize: isSmallScreen ? 14 : 16),
+          style: TextStyle(fontSize: isSmallScreen ? 13 : 16),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,

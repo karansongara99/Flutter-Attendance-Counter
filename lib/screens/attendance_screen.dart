@@ -62,6 +62,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     _addToHistory(false);
   }
 
+  void _updateAttendanceHistory() {
+    if (_attendanceHistory.isEmpty) return;
+
+    // Update the last entry
+    setState(() {
+      _attendanceHistory.last.update('present', (value) => _presentCount);
+      _attendanceHistory.last.update('absent', (value) => _absentCount);
+      _attendanceHistory.last
+          .update('total', (value) => _presentCount + _absentCount);
+      _attendanceHistory.last
+          .update('presentNumbers', (value) => _presentNumbers.join(', '));
+      _attendanceHistory.last
+          .update('absentNumbers', (value) => _absentNumbers.join(', '));
+    });
+  }
+
   void _addToHistory(bool isPresent) {
     final now = DateTime.now();
     setState(() {
@@ -79,13 +95,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
   }
 
-  void _saveData() {
-    // TODO: Implement save functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data saved successfully!')),
-    );
-  }
-
   void _navigateToReport() {
     Navigator.push(
       context,
@@ -97,19 +106,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onThemeToggle: widget.onThemeToggle,
         ),
       ),
-    );
-  }
-
-  void _copyData() {
-    final String data = _attendanceHistory.map((record) {
-      return '${record['semester']}, ${record['subject']}, ${record['date']}, '
-          '${record['time']}, ${record['present']}, ${record['absent']}, '
-          '${record['total']}, ${record['presentNumbers']}, ${record['absentNumbers']}';
-    }).join('\n');
-
-    Clipboard.setData(ClipboardData(text: data));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data copied to clipboard!')),
     );
   }
 
@@ -330,6 +326,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         return Chip(
                           label: Text(number),
                           backgroundColor: Colors.green.shade100,
+                          deleteIcon: const Icon(Icons.close, size: 18),
+                          onDeleted: () {
+                            setState(() {
+                              _presentNumbers.remove(number);
+                              _presentCount--;
+                              // Update attendance history
+                              _updateAttendanceHistory();
+                            });
+                          },
                         );
                       }).toList(),
                     ),
@@ -353,6 +358,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         return Chip(
                           label: Text(number),
                           backgroundColor: Colors.red.shade100,
+                          deleteIcon: const Icon(Icons.close, size: 18),
+                          onDeleted: () {
+                            setState(() {
+                              _absentNumbers.remove(number);
+                              _absentCount--;
+                              // Update attendance history
+                              _updateAttendanceHistory();
+                            });
+                          },
                         );
                       }).toList(),
                     ),
