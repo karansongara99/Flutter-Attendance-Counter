@@ -20,7 +20,7 @@ class AttendanceScreen extends StatefulWidget {
 class _AttendanceScreenState extends State<AttendanceScreen> {
   int _presentCount = 0;
   int _absentCount = 0;
-  int _currentNumber = 300;
+  int _currentNumber = 101;
   final List<String> _absentNumbers = [];
   final List<String> _presentNumbers = [];
   Map<String, String> _classInfo = {};
@@ -34,6 +34,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         setState(() {
+          _currentNumber = args['startNumber'] as int? ?? 101;
           _classInfo = {
             'class': args['class']?.toString() ?? '',
             'subject': args['subject']?.toString() ?? '',

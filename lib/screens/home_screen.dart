@@ -137,13 +137,34 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: ElevatedButton.icon(
                                 onPressed: isFormValid
                                     ? () {
+                                        int startNumber;
+                                        switch (selectedClass) {
+                                          case 'Class A':
+                                            startNumber = 101;
+                                            break;
+                                          case 'Class B':
+                                            startNumber = 201;
+                                            break;
+                                          case 'Class C':
+                                            startNumber = 301;
+                                            break;
+                                          case 'Class D':
+                                            startNumber = 401;
+                                            break;
+                                          case 'Class E':
+                                            startNumber = 501;
+                                            break;
+                                          default:
+                                            startNumber = 101;
+                                        }
                                         Navigator.pushNamed(
                                           context,
                                           '/attendance',
-                                          arguments: <String, String>{
+                                          arguments: <String, dynamic>{
                                             'class': selectedClass!,
                                             'subject': selectedSubject!,
                                             'semester': selectedSemester!,
+                                            'startNumber': startNumber,
                                           },
                                         );
                                       }
